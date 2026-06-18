@@ -19,6 +19,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Chatbot")
     parser.add_argument("user_prompt", type=str, help="User prompt")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     args = parser.parse_args()
 
     messages: list[types.Content] = [
@@ -30,15 +31,20 @@ if __name__ == "__main__":
         contents=messages,
     )
     if response:
-        print(f"User prompt: {args.user_prompt}")
-        if response.usage_metadata:
-            prompt_token: int | None = response.usage_metadata.prompt_token_count
-            response_token: int | None = response.usage_metadata.candidates_token_count
-            print(f"Prompt tokens: {prompt_token}")
-            print(f"Response tokens: {response_token}")
-            print(f"Response: {response.text}")
+        if args.verbose:
+            print(f"User prompt: {args.user_prompt}")
+            if response.usage_metadata:
+                prompt_token: int | None = response.usage_metadata.prompt_token_count
+                response_token: int | None = (
+                    response.usage_metadata.candidates_token_count
+                )
+                print(f"Prompt tokens: {prompt_token}")
+                print(f"Response tokens: {response_token}")
+                print(f"Response: {response.text}")
 
+            else:
+                raise RuntimeError("Usage metadata not found")
         else:
-            raise RuntimeError("Usage metadata not found")
+            print(response.text)
     else:
         raise RuntimeError("Response not found")

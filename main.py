@@ -3,6 +3,7 @@ import os
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
 MODEL = "gemini-2.5-flash"
 
@@ -20,15 +21,19 @@ if __name__ == "__main__":
     parser.add_argument("user_prompt", type=str, help="User prompt")
     args = parser.parse_args()
 
-    response = client.models.generate_content(
+    messages: list[types.Content] = [
+        types.Content(role="user", parts=[types.Part(text=args.user_prompt)]),
+    ]
+
+    response: types.GenerateContentResponse = client.models.generate_content(
         model=MODEL,
-        contents=args.user_prompt,
+        contents=messages,
     )
     if response:
         print(f"User prompt: {args.user_prompt}")
         if response.usage_metadata:
-            prompt_token = response.usage_metadata.prompt_token_count
-            response_token = response.usage_metadata.candidates_token_count
+            prompt_token: int | None = response.usage_metadata.prompt_token_count
+            response_token: int | None = response.usage_metadata.candidates_token_count
             print(f"Prompt tokens: {prompt_token}")
             print(f"Response tokens: {response_token}")
             print(f"Response: {response.text}")
